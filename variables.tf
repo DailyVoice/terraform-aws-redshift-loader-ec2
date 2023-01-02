@@ -307,72 +307,61 @@ variable "user_provided_id" {
   default     = ""
 }
 
-# --- Snowflake parameters
+# --- Redshift parameters
 
-variable "snowflake_loader_user" {
-  description = "Snowflake username used by loader to perform loading"
+variable "redshift_sg_id" {
+  description = "Security group ID used by Redshift"
   type        = string
 }
 
-variable "snowflake_password" {
-  description = "Password for snowflake_loader_user used by loader to perform loading"
+variable "redshift_host" {
+  description = "Redshift hostname used by loader to perform loading"
+  type        = string
+}
+
+variable "redshift_port" {
+  description = "Port used by Redshift server"
+  type        = number
+}
+
+variable "redshift_database" {
+  description = "Redshift database name"
+  type        = string
+}
+
+variable "redshift_role_arn" {
+  description = "Redshift role for loading snowplow data"
+  type        = string
+}
+
+variable "redshift_schema" {
+  description = "Redshift schema name"
+  type        = string
+}
+
+variable "redshift_username" {
+  description = "Redshift username used by loader to perform loading"
+  type        = string
+}
+
+variable "redshift_password" {
+  description = "Password for Redshift user used by loader to perform loading"
   type        = string
   sensitive   = true
 }
 
-variable "snowflake_loader_role" {
-  description = "Snowflake role for loading snowplow data"
+variable "redshift_aws_s3_stage_bucket_name" {
+  description = "AWS bucket name"
   type        = string
 }
 
-variable "snowflake_warehouse" {
-  description = "Snowflake warehouse name"
-  type        = string
-}
-
-variable "snowflake_database" {
-  description = "Snowflake database name"
-  type        = string
-}
-
-variable "snowflake_schema" {
-  description = "Snowflake schema name"
-  type        = string
-}
-
-variable "snowflake_transformed_stage_name" {
-  description = "Name of transformed stage"
-  type        = string
-}
-
-variable "snowflake_monitoring_stage_name" {
-  description = "Name of monitoring stage"
-  type        = string
-  default     = ""
-}
-
-variable "snowflake_region" {
-  description = "Snowflake region"
-  type        = string
-}
-
-variable "snowflake_account" {
-  description = "Snowflake account"
-  type        = string
-}
-
-variable "snowflake_aws_s3_transformed_stage_url" {
+variable "redshift_aws_s3_transformed_stage_url" {
   description = "AWS bucket url of transformed stage"
   type        = string
 }
 
-variable "snowflake_aws_s3_folder_monitoring_stage_url" {
+variable "redshift_aws_s3_folder_monitoring_stage_url" {
   description = "AWS bucket url of folder monitoring stage"
   type        = string
   default     = ""
-}
-
-variable "snowflake_aws_s3_stage_bucket_name" {
-  description = "AWS stage bucket"
-  type        = string
 }

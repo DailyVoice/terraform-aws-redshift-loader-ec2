@@ -1,9 +1,9 @@
 locals {
-  module_name    = "snowflake-loader-ec2"
-  module_version = "0.1.1"
+  module_name    = "redshift-loader-ec2"
+  module_version = "0.1.0"
 
-  app_name    = "rdb-loader-snowflake"
-  app_version = "3.0.0"
+  app_name    = "rdb-loader-redshift"
+  app_version = "5.2.1"
 
   local_tags = {
     Name           = var.name
@@ -75,7 +75,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
 
 resource "aws_iam_role" "iam_role" {
   name        = var.name
-  description = "Allows the Snowflake Loader nodes to access required services"
+  description = "Allows the Redshift Loader nodes to access required services"
   tags        = local.tags
 
   assume_role_policy = <<EOF
@@ -109,8 +109,8 @@ resource "aws_iam_policy" "iam_policy" {
             "s3:PutObject"
           ],
           Resource = [
-            "arn:aws:s3:::${var.snowflake_aws_s3_stage_bucket_name}",
-            "arn:aws:s3:::${var.snowflake_aws_s3_stage_bucket_name}/*"
+            "arn:aws:s3:::${var.redshift_aws_s3_stage_bucket_name}",
+            "arn:aws:s3:::${var.redshift_aws_s3_stage_bucket_name}/*"
           ]
         }
       ] : [],
@@ -193,6 +193,15 @@ resource "aws_security_group_rule" "egress_tcp_443" {
   security_group_id = aws_security_group.sg.id
 }
 
+resource "aws_security_group_rule" "egress_tcp_redshift" {
+  type                     = "egress"
+  from_port                = var.redshift_port
+  to_port                  = var.redshift_port
+  protocol                 = "tcp"
+  source_security_group_id = var.redshift_sg_id
+  security_group_id        = aws_security_group.sg.id
+}
+
 # Needed for clock synchronization
 resource "aws_security_group_rule" "egress_udp_123" {
   type              = "egress"
@@ -213,6 +222,18 @@ resource "aws_security_group_rule" "egress_udp_statsd" {
   protocol          = "udp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.sg.id
+}
+
+# --- EC2: Security Group Rules for Redshift
+
+# Allow ingress from the webserver to Redshift
+resource "aws_security_group_rule" "egress_tcp_redshift" {
+  type                     = "ingress"
+  from_port                = var.redshift_port
+  to_port                  = var.redshift_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.sg.id
+  security_group_id        = var.redshift_sg_id
 }
 
 # --- EC2: Auto-scaling group & Launch Configurations
@@ -263,18 +284,14 @@ locals {
   config = templatefile("${path.module}/templates/config.json.tmpl", {
     region                     = data.aws_region.current.name
     message_queue              = var.sqs_queue_name
-    sf_username                = var.snowflake_loader_user
-    sf_password                = var.snowflake_password
-    sf_region                  = var.snowflake_region
-    sf_account                 = var.snowflake_account
-    sf_wh_name                 = var.snowflake_warehouse
-    sf_db_name                 = var.snowflake_database
-    sf_role                    = var.snowflake_loader_role
-    sf_transformed_stage       = var.snowflake_transformed_stage_name
-    sf_schema                  = var.snowflake_schema
-    shredder_output            = var.snowflake_aws_s3_transformed_stage_url
-    sf_max_error_given         = var.max_error != -1
-    sf_max_error               = var.max_error
+    redshift_host              = var.redshift_host
+    redshift_port              = var.redshift_port
+    redshift_database          = var.redshift_database
+    redshift_role_arn          = var.redshift_role_arn
+    redshift_schema            = var.redshift_schema
+    redshift_username          = var.redshift_username
+    redshift_password          = var.redshift_password
+    transformer_output         = var.redshift_aws_s3_transformed_stage_url
     sp_tracking_enabled        = var.sp_tracking_enabled
     sp_tracking_app_id         = var.sp_tracking_app_id
     sp_tracking_collector_url  = var.sp_tracking_collector_url
@@ -287,8 +304,7 @@ locals {
     webhook_enabled            = var.webhook_enabled
     webhook_collector          = var.webhook_collector
     folder_monitoring_enabled  = var.folder_monitoring_enabled
-    sf_folder_monitoring_stage = var.snowflake_monitoring_stage_name
-    folder_monitoring_staging  = var.snowflake_aws_s3_folder_monitoring_stage_url
+    folder_monitoring_staging  = var.redshift_aws_s3_folder_monitoring_stage_url
     folder_monitoring_period   = var.folder_monitoring_period
     folder_monitoring_since    = var.folder_monitoring_since
     folder_monitoring_until    = var.folder_monitoring_until
