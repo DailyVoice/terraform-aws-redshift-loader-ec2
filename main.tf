@@ -227,7 +227,7 @@ resource "aws_security_group_rule" "egress_udp_statsd" {
 # --- EC2: Security Group Rules for Redshift
 
 # Allow ingress from the webserver to Redshift
-resource "aws_security_group_rule" "egress_tcp_redshift" {
+resource "aws_security_group_rule" "ingress_tcp_redshift" {
   type                     = "ingress"
   from_port                = var.redshift_port
   to_port                  = var.redshift_port
