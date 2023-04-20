@@ -26,7 +26,7 @@ data "aws_caller_identity" "current" {}
 
 module "telemetry" {
   source  = "snowplow-devops/telemetry/snowplow"
-  version = "0.2.0"
+  version = "0.4.0"
 
   count = var.telemetry_enabled ? 1 : 0
 
@@ -357,7 +357,7 @@ resource "aws_launch_configuration" "lc" {
 
 module "tags" {
   source  = "snowplow-devops/tags/aws"
-  version = "0.1.2"
+  version = "0.2.1"
 
   tags = local.tags
 }
